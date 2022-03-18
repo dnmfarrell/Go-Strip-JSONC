@@ -36,9 +36,9 @@ stripjsonc < data/input.jsonc
 ```
 
 ### Building
-To create the `stripjsonc` program, simply run:
+To build the `stripjsonc` program locally, simply run:
 
-   go install ./...
+   go build -o stripjsonc ./cmd/stripjsonc/main.go
 
 ### Fuzzing
 This module comes with a fuzzing test, which can be run with `go test`:
