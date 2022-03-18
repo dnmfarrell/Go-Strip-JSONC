@@ -1,6 +1,7 @@
-package main
+package stripjsonc
 
 import (
+	"os"
 	"testing"
 	"unicode/utf8"
 )
@@ -28,7 +29,7 @@ func TestStripJSONC(t *testing.T) {
      "b😃\"\\ar/*":                                   "*/baz"
 }
 `
-	output := StripJSONC(input)
+	output := StripJSONCString(input)
 	if output != expected {
 		t.Errorf("Output %s jsonc does not match expected %s", output, expected)
 	}
@@ -44,9 +45,17 @@ func FuzzStripJSONC(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, orig string) {
-		res := StripJSONC(orig)
+		res := StripJSONCString(orig)
 		if utf8.ValidString(orig) && !utf8.ValidString(res) {
 			t.Errorf("StripJSONC produced invalid UTF-8 string %q", res)
 		}
 	})
+}
+
+func BenchmarkStripJSONCStream(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		f, _ := os.Open("data/large.jsonc")
+		StripJSONCStream(f, os.Stdout)
+		f.Close()
+	}
 }

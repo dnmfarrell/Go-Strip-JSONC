@@ -5,7 +5,7 @@ This is a Go module version of the go script from the original [repo](https://gi
 Strips single line `//` and block `/* */` comments from .jsonc text:
 
 ```
-echo '[1, /* strip this comment */ 2, 3]' | ./stripjsonc
+echo '[1, /* strip this comment */ 2, 3]' | stripjsonc
 [1,                          2, 3]
 ```
 
@@ -19,10 +19,10 @@ JSONC doesn't have a spec but its block comments have been [described](https://c
 Some JSONC parsers support trailing commas, but as `stripjsonc` is line-oriented, it does not have an option to remove trailing commas.
 
 ### Test input
-This repo contains a test file called `input.jsonc` which exercises the different cases of embedding comments in JSON. The file `output.jsonc` contains the stripped output.
+This repo contains a test file called `data/input.jsonc` which exercises the different cases of embedding comments in JSON. The file `data/output.jsonc` contains the stripped output.
 
 ```
-./stripjsonc < input.jsonc
+stripjsonc < data/input.jsonc
                                 
 { "foo //": 123,                               
      
@@ -38,7 +38,7 @@ This repo contains a test file called `input.jsonc` which exercises the differen
 ### Building
 To create the `stripjsonc` program, simply run:
 
-   go build
+   go install ./...
 
 ### Fuzzing
 This module comes with a fuzzing test, which can be run with `go test`:

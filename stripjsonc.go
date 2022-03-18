@@ -1,4 +1,4 @@
-package main
+package stripjsonc
 
 import (
 	"bufio"
@@ -6,19 +6,6 @@ import (
 	"os"
 	"strings"
 )
-
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	s := NewStripper()
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		s(line)
-		fmt.Println(string(line))
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
-}
 
 func NewStripper() func([]byte) {
 	var inStr, inMLComment bool
@@ -67,13 +54,34 @@ func NewStripper() func([]byte) {
 	}
 }
 
-func StripJSONC(jsonc string) string {
+func StripJSONCStream(in, out *os.File) {
+	scanner := bufio.NewScanner(in)
+	writer := bufio.NewWriter(out)
+	strip := NewStripper()
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		strip(line)
+		newlined := append(line, '\n')
+		if _, err := writer.Write(newlined); err != nil {
+			fmt.Fprintf(os.Stderr, "error writing to %s: %e\n", out.Name(), err)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "error reading from %s: %e\n", in.Name(), err)
+	}
+	if err := writer.Flush(); err != nil {
+		fmt.Fprintf(os.Stderr, "error flushing %s: %e\n", in.Name(), err)
+	}
+}
+
+func StripJSONCString(jsonc string) string {
 	s := NewStripper()
-	stripped := ""
+	stripped, delim := "", ""
 	for _, lineStr := range strings.Split(jsonc, "\n") {
 		line := []byte(lineStr)
 		s(line)
-		stripped += string(line) + "\n"
+		stripped += delim + string(line)
+		delim = "\n"
 	}
-	return stripped[:len(stripped)-1]
+	return stripped
 }
